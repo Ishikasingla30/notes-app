@@ -68,3 +68,52 @@ export const deleteNote = async (req, res) => {
   }
   res.json({ success: true, message: "Note trash mein chala gaya" });
 };
+export const togglePin = async (req, res) => {
+  const note = await Note.findOne({
+    _id: req.params.id,
+    userId: req.user._id,
+    isDeleted: false,
+  });
+  if (!note) {
+    return res.status(404).json({ success: false, message: "Note nahi mila" });
+  }
+  note.isPinned = !note.isPinned;
+  await note.save();
+  res.json({ success: true, note });
+};
+
+export const toggleArchive = async (req, res) => {
+  const note = await Note.findOne({
+    _id: req.params.id,
+    userId: req.user._id,
+    isDeleted: false,
+  });
+  if (!note) {
+    return res.status(404).json({ success: false, message: "Note nahi mila" });
+  }
+  note.isArchived = !note.isArchived;
+  await note.save();
+  res.json({ success: true, note });
+};
+
+export const getTrash = async (req, res) => {
+  const notes = await Note.find({
+    userId: req.user._id,
+    isDeleted: true,
+  }).sort({ updatedAt: -1 });
+  res.json({ success: true, count: notes.length, notes });
+};
+
+export const restoreNote = async (req, res) => {
+  const note = await Note.findOneAndUpdate(
+    { _id: req.params.id, userId: req.user._id, isDeleted: true },
+    { isDeleted: false },
+    { new: true }
+  );
+  if (!note) {
+    return res
+      .status(404)
+      .json({ success: false, message: "Trash mein ye note nahi mila" });
+  }
+  res.json({ success: true, note });
+};
