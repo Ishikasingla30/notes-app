@@ -16,7 +16,7 @@ app.use(morgan("dev"));
 
 app.get("/api/health", (req, res) => {
 
-  res.json({ success: true, message: "API chal rahi hai" });
+  res.json({ success: true, message: "API is running" });
 });
 app.use("/api/auth", authRoutes);
 app.use("/api/notes", noteRoutes);

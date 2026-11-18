@@ -9,8 +9,8 @@ import {
   toggleArchive,
   getTrash,
   restoreNote,
+  deleteForever
 } from "../controllers/noteController.js";
-
 const router = express.Router();
 
 router.use(protect);
@@ -21,5 +21,6 @@ router.route("/:id").put(updateNote).delete(deleteNote);
 router.patch("/:id/pin", togglePin);
 router.patch("/:id/archive", toggleArchive);
 router.patch("/:id/restore", restoreNote);
+router.delete("/:id/permanent", deleteForever);
 
 export default router;

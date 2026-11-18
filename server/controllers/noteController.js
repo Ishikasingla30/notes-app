@@ -45,7 +45,7 @@ export const createNote = async (req, res) => {
 
 export const updateNote = async (req, res) => {
   const note = await Note.findOneAndUpdate(
-    { _id: req.params.id, userId: req.user._id },
+    { _id: req.params.id, userId: req.user._id, isDeleted: false },
     pickFields(req.body),
     { new: true, runValidators: true }
   );
@@ -116,4 +116,17 @@ export const restoreNote = async (req, res) => {
       .json({ success: false, message: "Trash mein ye note nahi mila" });
   }
   res.json({ success: true, note });
+};
+export const deleteForever = async (req, res) => {
+  const note = await Note.findOneAndDelete({
+    _id: req.params.id,
+    userId: req.user._id,
+    isDeleted: true,
+  });
+  if (!note) {
+    return res
+      .status(404)
+      .json({ success: false, message: "Note not found in trash" });
+  }
+  res.json({ success: true, message: "Note permanently deleted" });
 };
