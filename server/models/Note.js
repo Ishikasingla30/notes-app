@@ -15,6 +15,11 @@ const noteSchema = new mongoose.Schema(
     isPinned: { type: Boolean, default: false },
     isArchived: { type: Boolean, default: false },
     isDeleted: { type: Boolean, default: false },
+    priority: {
+  type: String,
+  enum: ["low", "normal", "important", "urgent"],
+  default: "normal",
+},
   },
   { timestamps: true }
 );

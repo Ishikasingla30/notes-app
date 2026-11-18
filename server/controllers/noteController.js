@@ -1,9 +1,9 @@
 import Note from "../models/Note.js";
 
 const pickFields = (body) => {
-  const { title, content, tags, color } = body;
+  const { title, content, tags, color, priority } = body;
   return Object.fromEntries(
-    Object.entries({ title, content, tags, color }).filter(
+    Object.entries({ title, content, tags, color, priority }).filter(
       ([, v]) => v !== undefined
     )
   );
