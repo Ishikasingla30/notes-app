@@ -9,7 +9,9 @@ import {
   toggleArchive,
   getTrash,
   restoreNote,
-  deleteForever
+  deleteForever,
+  getStats,
+
 } from "../controllers/noteController.js";
 const router = express.Router();
 
@@ -17,6 +19,7 @@ router.use(protect);
 
 router.route("/").get(getNotes).post(createNote);
 router.get("/trash", getTrash);
+router.get("/stats", getStats);
 router.route("/:id").put(updateNote).delete(deleteNote);
 router.patch("/:id/pin", togglePin);
 router.patch("/:id/archive", toggleArchive);

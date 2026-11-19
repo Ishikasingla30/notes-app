@@ -130,3 +130,60 @@ export const deleteForever = async (req, res) => {
   }
   res.json({ success: true, message: "Note permanently deleted" });
 };
+export const getStats = async (req, res) => {
+  const weekAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+
+  const [result] = await Note.aggregate([
+    // Only this user's notes that are not in the trash
+    { $match: { userId: req.user._id, isDeleted: false } },
+    {
+      // Run three separate summaries on the same matched notes
+      $facet: {
+        totals: [
+          {
+            $group: {
+              _id: null,
+              total: { $sum: 1 },
+              archived: { $sum: { $cond: ["$isArchived", 1, 0] } },
+              pinned: { $sum: { $cond: ["$isPinned", 1, 0] } },
+              thisWeek: {
+                $sum: { $cond: [{ $gte: ["$createdAt", weekAgo] }, 1, 0] },
+              },
+            },
+          },
+        ],
+        byPriority: [{ $group: { _id: "$priority", count: { $sum: 1 } } }],
+        byTag: [
+          { $unwind: "$tags" },
+          { $group: { _id: "$tags", count: { $sum: 1 } } },
+          { $sort: { count: -1 } },
+          { $limit: 10 },
+        ],
+      },
+    },
+  ]);
+
+  const totals = result.totals[0] || {
+    total: 0,
+    archived: 0,
+    pinned: 0,
+    thisWeek: 0,
+  };
+
+  const byPriority = { low: 0, normal: 0, important: 0, urgent: 0 };
+  result.byPriority.forEach((item) => {
+    byPriority[item._id] = item.count;
+  });
+
+  res.json({
+    success: true,
+    stats: {
+      total: totals.total,
+      archived: totals.archived,
+      pinned: totals.pinned,
+      thisWeek: totals.thisWeek,
+      byPriority,
+      byTag: result.byTag.map((item) => ({ tag: item._id, count: item.count })),
+    },
+  });
+};
