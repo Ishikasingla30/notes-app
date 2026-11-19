@@ -5,21 +5,20 @@ const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+ const [loading, setLoading] = useState(() =>
+  Boolean(localStorage.getItem("token"))
+);
 
   // On page load, restore the session from the saved token
   useEffect(() => {
-    const token = localStorage.getItem("token");
-    if (!token) {
-      setLoading(false);
-      return;
-    }
-    api
-      .get("/auth/me")
-      .then((res) => setUser(res.data.user))
-      .catch(() => localStorage.removeItem("token"))
-      .finally(() => setLoading(false));
-  }, []);
+  if (!localStorage.getItem("token")) return;
+
+  api
+    .get("/auth/me")
+    .then((res) => setUser(res.data.user))
+    .catch(() => localStorage.removeItem("token"))
+    .finally(() => setLoading(false));
+}, []);
 
   const login = async (email, password) => {
     const res = await api.post("/auth/login", { email, password });
