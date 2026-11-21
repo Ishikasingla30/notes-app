@@ -1,4 +1,4 @@
-import { NavLink, Outlet } from "react-router-dom";
+import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import {
   FiGrid,
   FiBookmark,
@@ -11,8 +11,10 @@ import {
   FiPlus,
   FiSun,
   FiMoon,
+  FiLogOut,
 } from "react-icons/fi";
 import { useTheme } from "../context/ThemeContext";
+import { useAuth } from "../context/AuthContext";
 import Button from "./ui/Button";
 
 const links = [
@@ -27,6 +29,15 @@ const links = [
 
 const Layout = () => {
   const { theme, toggleTheme } = useTheme();
+  const { user, logout } = useAuth();
+  const navigate = useNavigate();
+
+  const handleLogout = () => {
+    logout();
+    navigate("/login");
+  };
+
+  const initial = user?.name?.charAt(0).toUpperCase() || "?";
 
   return (
     <div className="flex min-h-screen">
@@ -53,6 +64,14 @@ const Layout = () => {
             </NavLink>
           ))}
         </nav>
+
+        <button
+          onClick={handleLogout}
+          className="mt-auto flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-red-50 hover:text-red-600 dark:text-slate-300 dark:hover:bg-slate-800"
+        >
+          <FiLogOut size={18} />
+          Log out
+        </button>
       </aside>
 
       <div className="flex min-w-0 flex-1 flex-col">
@@ -79,8 +98,11 @@ const Layout = () => {
             <span className="hidden sm:inline">New note</span>
           </Button>
 
-          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-600 text-sm font-semibold text-white">
-            I
+          <div
+            title={user?.name}
+            className="flex h-9 w-9 items-center justify-center rounded-full bg-brand-600 text-sm font-semibold text-white"
+          >
+            {initial}
           </div>
         </header>
 
