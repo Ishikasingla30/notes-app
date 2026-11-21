@@ -2,7 +2,6 @@ import { NavLink, Outlet, useNavigate } from "react-router-dom";
 import {
   FiGrid,
   FiBookmark,
-  FiTag,
   FiFolder,
   FiArchive,
   FiTrash2,
@@ -20,7 +19,6 @@ import Button from "./ui/Button";
 const links = [
   { to: "/dashboard", label: "Dashboard", icon: FiGrid },
   { to: "/bookmarks", label: "Bookmarks", icon: FiBookmark },
-  { to: "/tags", label: "Tags", icon: FiTag },
   { to: "/files", label: "My Files", icon: FiFolder },
   { to: "/archive", label: "Archive", icon: FiArchive },
   { to: "/trash", label: "Trash", icon: FiTrash2 },

@@ -1,27 +1,39 @@
-import { Routes, Route, Navigate } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import Layout from "./components/Layout";
 import ProtectedRoute from "./components/ProtectedRoute";
-
-const Placeholder = ({ title }) => (
-  <h1 className="p-4 text-2xl font-bold text-brand-600">{title}</h1>
-);
+import AdminRoute from "./components/AdminRoute";
+import Home from "./pages/Home";
+import About from "./pages/About";
+import Login from "./pages/Login";
+import Register from "./pages/Register";
+import Dashboard from "./pages/Dashboard";
+import Bookmarks from "./pages/Bookmarks";
+import Files from "./pages/Files";
+import Archive from "./pages/Archive";
+import Trash from "./pages/Trash";
+import Profile from "./pages/Profile";
+import Admin from "./pages/Admin";
 
 function App() {
   return (
     <Routes>
-      <Route path="/login" element={<Placeholder title="Login" />} />
-      <Route path="/register" element={<Placeholder title="Register" />} />
+      <Route path="/" element={<Home />} />
+      <Route path="/about" element={<About />} />
+      <Route path="/login" element={<Login />} />
+      <Route path="/register" element={<Register />} />
 
       <Route element={<ProtectedRoute />}>
         <Route element={<Layout />}>
-          <Route path="/" element={<Navigate to="/dashboard" replace />} />
-          <Route path="/dashboard" element={<Placeholder title="Dashboard" />} />
-          <Route path="/bookmarks" element={<Placeholder title="Bookmarks" />} />
-          <Route path="/tags" element={<Placeholder title="Tags" />} />
-          <Route path="/files" element={<Placeholder title="My Files" />} />
-          <Route path="/archive" element={<Placeholder title="Archive" />} />
-          <Route path="/trash" element={<Placeholder title="Trash" />} />
-          <Route path="/profile" element={<Placeholder title="Profile" />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/bookmarks" element={<Bookmarks />} />
+          <Route path="/files" element={<Files />} />
+          <Route path="/archive" element={<Archive />} />
+          <Route path="/trash" element={<Trash />} />
+          <Route path="/profile" element={<Profile />} />
+
+          <Route element={<AdminRoute />}>
+            <Route path="/admin" element={<Admin />} />
+          </Route>
         </Route>
       </Route>
     </Routes>
