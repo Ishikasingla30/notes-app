@@ -22,6 +22,7 @@ export const errorHandler = (err, req, res, next) => {
     status = 409;
     message = "Duplicate value, ye pehle se exist karta hai";
   }
+  if (err.code === "LIMIT_FILE_SIZE") { status = 400; message = "File is too large (max 5 MB)"; }
 
   res.status(status).json({
     success: false,
