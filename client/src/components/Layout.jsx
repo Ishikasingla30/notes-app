@@ -11,6 +11,7 @@ import {
   FiSun,
   FiMoon,
   FiLogOut,
+  FiShield
 } from "react-icons/fi";
 import { useTheme } from "../context/ThemeContext";
 import { useAuth } from "../context/AuthContext";
@@ -36,7 +37,10 @@ const Layout = () => {
   };
 
   const initial = user?.name?.charAt(0).toUpperCase() || "?";
-
+const allLinks =
+  user?.role === "admin"
+    ? [...links, { to: "/admin", label: "Admin", icon: FiShield }]
+    : links;
   return (
     <div className="flex min-h-screen">
       <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900 md:flex">
@@ -45,7 +49,7 @@ const Layout = () => {
         </div>
 
         <nav className="flex flex-col gap-1">
-          {links.map(({ to, label, icon: Icon }) => (
+          {allLinks.map(({ to, label, icon: Icon }) => (
             <NavLink
               key={to}
               to={to}
