@@ -1,7 +1,7 @@
 export const notFound = (req, res) => {
   res
     .status(404)
-    .json({ success: false, message: `Route nahi mila: ${req.originalUrl}` });
+    .json({ success: false, message: `Route not found: ${req.originalUrl}` });
 };
 
 export const errorHandler = (err, req, res, next) => {
@@ -20,7 +20,7 @@ export const errorHandler = (err, req, res, next) => {
   }
   if (err.code === 11000) {
     status = 409;
-    message = "Duplicate value, ye pehle se exist karta hai";
+    message = "Duplicate value, this already exists";
   }
   if (err.code === "LIMIT_FILE_SIZE") { status = 400; message = "File is too large (max 5 MB)"; }
 

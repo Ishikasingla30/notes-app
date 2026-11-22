@@ -7,7 +7,7 @@ export const protect = async (req, res, next) => {
   if (!header || !header.startsWith("Bearer ")) {
     return res
       .status(401)
-      .json({ success: false, message: "Token nahi mila, pehle login karo" });
+      .json({ success: false, message: "No token provided, please log in" });
   }
 
   try {
@@ -18,7 +18,7 @@ export const protect = async (req, res, next) => {
     if (!user) {
       return res
         .status(401)
-        .json({ success: false, message: "User exist nahi karta" });
+        .json({ success: false, message: "User no longer exists" });
     }
 
     req.user = user;
@@ -26,7 +26,7 @@ export const protect = async (req, res, next) => {
   } catch (error) {
     res
       .status(401)
-      .json({ success: false, message: "Token invalid ya expire ho gaya" });
+      .json({ success: false, message: "Invalid or expired token" });
   }
 };
 export const authorizeRoles = (...roles) => (req, res, next) => {

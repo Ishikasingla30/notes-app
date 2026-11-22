@@ -36,7 +36,7 @@ export const createNote = async (req, res) => {
   if (!req.body.title) {
     return res
       .status(400)
-      .json({ success: false, message: "Title zaroori hai" });
+      .json({ success: false, message: "Title in Required" });
   }
 
   const note = await Note.create({ ...pickFields(req.body), userId: req.user._id });
@@ -51,7 +51,7 @@ export const updateNote = async (req, res) => {
   );
 
   if (!note) {
-    return res.status(404).json({ success: false, message: "Note nahi mila" });
+    return res.status(404).json({ success: false, message: "Note not found in trash" });
   }
   res.json({ success: true, note });
 };
@@ -64,9 +64,9 @@ export const deleteNote = async (req, res) => {
   );
 
   if (!note) {
-    return res.status(404).json({ success: false, message: "Note nahi mila" });
+    return res.status(404).json({ success: false, message: "Note not found in trash" });
   }
-  res.json({ success: true, message: "Note trash mein chala gaya" });
+  res.json({ success: true, message: "Note moved to trash" });
 };
 export const togglePin = async (req, res) => {
   const note = await Note.findOne({
@@ -75,7 +75,7 @@ export const togglePin = async (req, res) => {
     isDeleted: false,
   });
   if (!note) {
-    return res.status(404).json({ success: false, message: "Note nahi mila" });
+    return res.status(404).json({ success: false, message: "Note not found in trash" });
   }
   note.isPinned = !note.isPinned;
   await note.save();
@@ -89,7 +89,7 @@ export const toggleArchive = async (req, res) => {
     isDeleted: false,
   });
   if (!note) {
-    return res.status(404).json({ success: false, message: "Note nahi mila" });
+    return res.status(404).json({ success: false, message: "Note not found in trash" });
   }
   note.isArchived = !note.isArchived;
   await note.save();
@@ -113,7 +113,7 @@ export const restoreNote = async (req, res) => {
   if (!note) {
     return res
       .status(404)
-      .json({ success: false, message: "Trash mein ye note nahi mila" });
+      .json({ success: false, message: "Note not found in trash" });
   }
   res.json({ success: true, note });
 };
