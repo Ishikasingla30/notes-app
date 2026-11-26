@@ -32,7 +32,7 @@ function reducer(state, action) {
   }
 }
 
-export default function useNotes({ search = "", tag = "", archived = false } = {}) {
+export default function useNotes({ search = "", tag = "", archived = false, pinned = false } = {}) {
   const [state, dispatch] = useReducer(reducer, initialState);
 
   const fetchNotes = useCallback(async () => {
@@ -41,6 +41,7 @@ export default function useNotes({ search = "", tag = "", archived = false } = {
       const params = { archived };
       if (search) params.search = search;
       if (tag) params.tag = tag;
+      if (pinned) params.pinned = true;
       const res = await api.get("/notes", { params });
       dispatch({ type: "FETCH_SUCCESS", payload: res.data.notes });
     } catch (err) {
@@ -49,9 +50,9 @@ export default function useNotes({ search = "", tag = "", archived = false } = {
         payload: err.response?.data?.message || "Could not load notes",
       });
     }
-  }, [search, tag, archived]);
+  }, [search, tag, archived, pinned]);
 
-  // Fetch again whenever search, tag or archived changes
+  // Fetch again whenever search, tag, archived or pinned changes
   useEffect(() => {
     fetchNotes();
   }, [fetchNotes]);
@@ -74,7 +75,11 @@ export default function useNotes({ search = "", tag = "", archived = false } = {
 
   const togglePin = async (id) => {
     const res = await api.patch(`/notes/${id}/pin`);
-    dispatch({ type: "UPDATE", payload: res.data.note });
+    if (pinned && !res.data.note.isPinned) {
+      dispatch({ type: "REMOVE", payload: id });
+    } else {
+      dispatch({ type: "UPDATE", payload: res.data.note });
+    }
   };
 
   const toggleArchive = async (id) => {
