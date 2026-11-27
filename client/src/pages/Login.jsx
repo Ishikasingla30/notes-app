@@ -66,7 +66,6 @@ const Login = () => {
               {error}
             </p>
           )}
-
           <Button type="submit" disabled={submitting} className="w-full">
             {submitting ? "Logging in..." : "Login"}
           </Button>
@@ -85,5 +84,4 @@ const Login = () => {
     </div>
   );
 };
-
 export default Login;
