@@ -66,8 +66,7 @@ const PublicNavbar = () => {
           onClick={() => setOpen((o) => !o)}
           aria-label="Toggle menu"
           aria-expanded={open}
-          className="rounded-lg p-2 text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800 sm:hidden"
-        >
+          className="rounded-lg p-2 text-slate-700 hover:bg-slate-100 dark:text-slate-200 dark:hover:bg-slate-800 sm:hidden">
           <svg
             className="h-6 w-6"
             fill="none"
@@ -99,7 +98,7 @@ const PublicNavbar = () => {
               onClick={() => setOpen(false)}
               className={`${buttonBase} bg-brand-600 text-white hover:bg-brand-700`}
             >
-              Dashboard
+            Dashboard
             </Link>
           ) : (
             <>
