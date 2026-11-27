@@ -1,19 +1,21 @@
 import { useState } from "react";
-import { FiSearch, FiPlus } from "react-icons/fi";
+import { useSearchParams } from "react-router-dom";
+import { FiX } from "react-icons/fi";
 import useNotes from "../hooks/useNotes";
 import useDebounce from "../hooks/useDebounce";
 import NoteCard from "../components/NoteCard";
 import NoteForm from "../components/NoteForm";
 import StatsCards from "../components/StatsCards";
-import Button from "../components/ui/Button";
 import Loader from "../components/ui/Loader";
 import EmptyState from "../components/ui/EmptyState";
 import ErrorMessage from "../components/ui/ErrorMessage";
 
 const Dashboard = () => {
-  const [search, setSearch] = useState("");
-  // wait until the user stops typing before calling the API
+  const [params, setParams] = useSearchParams();
+  // the header search bar puts the text in the URL as ?q=...
+  const search = params.get("q") || "";
   const debouncedSearch = useDebounce(search);
+  const [tag, setTag] = useState("");
 
   const {
     notes,
@@ -24,23 +26,29 @@ const Dashboard = () => {
     deleteNote,
     togglePin,
     toggleArchive,
-  } = useNotes({ search: debouncedSearch });
+  } = useNotes({ search: debouncedSearch, tag });
 
   const [formOpen, setFormOpen] = useState(false);
   const [editing, setEditing] = useState(null); // note being edited, or null
   const [actionError, setActionError] = useState("");
 
-  const openNew = () => {
-    setEditing(null);
-    setFormOpen(true);
-  };
+  // the header "New note" button sends us here with ?new=1
+  const showForm = formOpen || params.get("new") === "1";
 
   const openEdit = (note) => {
     setEditing(note);
     setFormOpen(true);
   };
 
-  const closeForm = () => setFormOpen(false);
+  const closeForm = () => {
+    setFormOpen(false);
+    setEditing(null);
+    if (params.get("new")) {
+      const next = new URLSearchParams(params);
+      next.delete("new");
+      setParams(next, { replace: true });
+    }
+  };
 
   const handleSave = async (data) => {
     if (editing) await updateNote(editing._id, data);
@@ -58,26 +66,27 @@ const Dashboard = () => {
     }
   };
 
+  const filtered = Boolean(debouncedSearch || tag);
+
   return (
     <div className="space-y-6">
-      <StatsCards refreshKey={notes.length} />
+      <StatsCards
+        refreshKey={`${notes.length}-${notes.filter((n) => n.isPinned).length}`}
+      />
 
-      <div className="flex items-center gap-3">
-        <div className="relative flex-1">
-          <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
-          <input
-            type="search"
-            value={search}
-            onChange={(e) => setSearch(e.target.value)}
-            placeholder="Search your notes..."
-            className="w-full rounded-full border border-slate-200 bg-white py-2 pl-9 pr-4 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30 dark:border-slate-700 dark:bg-slate-900"
-          />
+      {tag && (
+        <div className="flex items-center gap-2 text-sm">
+          <span className="text-slate-500 dark:text-slate-400">Filtering by</span>
+          <button
+            type="button"
+            onClick={() => setTag("")}
+            className="inline-flex items-center gap-1 rounded-full bg-brand-50 px-3 py-1 font-medium text-brand-700 dark:bg-slate-800 dark:text-brand-100"
+          >
+            #{tag}
+            <FiX size={14} />
+          </button>
         </div>
-        <Button onClick={openNew}>
-          <FiPlus size={16} />
-          <span className="hidden sm:inline">New note</span>
-        </Button>
-      </div>
+      )}
 
       <ErrorMessage message={error || actionError} />
 
@@ -85,10 +94,10 @@ const Dashboard = () => {
         <Loader text="Loading notes..." />
       ) : notes.length === 0 ? (
         <EmptyState
-          title={search ? "No notes found" : "No notes yet"}
+          title={filtered ? "No notes found" : "No notes yet"}
           text={
-            search
-              ? "Try a different search."
+            filtered
+              ? "Try a different search or tag."
               : "Click New note to write your first one."
           }
         />
@@ -102,12 +111,13 @@ const Dashboard = () => {
               onDelete={run(deleteNote)}
               onPin={run(togglePin)}
               onArchive={run(toggleArchive)}
+              onTagClick={setTag}
             />
           ))}
         </div>
       )}
 
-      {formOpen && (
+      {showForm && (
         <NoteForm note={editing} onSave={handleSave} onClose={closeForm} />
       )}
     </div>

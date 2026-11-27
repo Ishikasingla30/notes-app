@@ -9,7 +9,7 @@ const userSchema = new mongoose.Schema(
       unique: true,
       lowercase: true,
       trim: true,
-      index: true,
+      
     },
     passwordHash: { type: String, required: true },
     avatarUrl: { type: String, default: "" },

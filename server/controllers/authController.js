@@ -4,8 +4,16 @@ import User from "../models/User.js";
 
 const generateToken = (id) =>
   jwt.sign({ id }, process.env.JWT_SECRET, {
-    expiresIn: process.env.JWT_EXPIRY,
+    expiresIn: process.env.JWT_EXPIRY || "7d",
   });
+
+const userPayload = (u) => ({
+  id: u._id,
+  name: u.name,
+  email: u.email,
+  role: u.role,
+  createdAt: u.createdAt,
+});
 
 export const register = async (req, res) => {
   const { name, email, password } = req.body;
@@ -37,7 +45,7 @@ if (password.length < 6) {
   res.status(201).json({
     success: true,
     token: generateToken(user._id),
-    user: { id: user._id, name: user.name, email: user.email, role: user.role },
+    user: userPayload(user),
   });
 };
 
@@ -62,9 +70,9 @@ export const login = async (req, res) => {
   res.json({
     success: true,
     token: generateToken(user._id),
-    user: { id: user._id, name: user.name, email: user.email, role: user.role },
+    user: userPayload(user),
   });
 };
 export const getMe = async (req, res) => {
-  res.json({ success: true, user: req.user });
+  res.json({ success: true, user: userPayload(req.user) });
 };

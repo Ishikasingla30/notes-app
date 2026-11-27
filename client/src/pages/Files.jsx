@@ -39,19 +39,14 @@ const Files = () => {
   const [success, setSuccess] = useState("");
   const inputRef = useRef(null);
 
-  const fetchFiles = async () => {
-    try {
-      const res = await api.get("/files");
-      setFiles(res.data.files);
-    } catch (err) {
-      setError(err.response?.data?.message || "Could not load your files.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
   useEffect(() => {
-    fetchFiles();
+    api
+      .get("/files")
+      .then((res) => setFiles(res.data.files))
+      .catch((err) =>
+        setError(err.response?.data?.message || "Could not load your files.")
+      )
+      .finally(() => setLoading(false));
   }, []);
 
   const handleUpload = async (e) => {
@@ -78,9 +73,7 @@ const Files = () => {
 
     setUploading(true);
     try {
-      const res = await api.post("/files", formData, {
-        headers: { "Content-Type": "multipart/form-data" },
-      });
+      const res = await api.post("/files", formData);
       setFiles((prev) => [res.data.file, ...prev]);
       setSuccess(`"${file.name}" uploaded.`);
     } catch (err) {

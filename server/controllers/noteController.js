@@ -2,11 +2,19 @@ import Note from "../models/Note.js";
 
 const pickFields = (body) => {
   const { title, content, tags, color, priority } = body;
-  return Object.fromEntries(
+  const fields = Object.fromEntries(
     Object.entries({ title, content, tags, color, priority }).filter(
       ([, v]) => v !== undefined
     )
   );
+  if (Array.isArray(fields.tags)) {
+    fields.tags = [
+      ...new Set(
+        fields.tags.map((t) => String(t).trim().toLowerCase()).filter(Boolean)
+      ),
+    ];
+  }
+  return fields;
 };
 
 export const getNotes = async (req, res) => {
@@ -17,6 +25,7 @@ export const getNotes = async (req, res) => {
     isDeleted: false,
     isArchived: archived === "true",
   };
+  if (req.query.pinned === "true") filter.isPinned = true;
 
   if (tag) filter.tags = tag;
 
@@ -36,7 +45,7 @@ export const createNote = async (req, res) => {
   if (!req.body.title) {
     return res
       .status(400)
-      .json({ success: false, message: "Title in Required" });
+      .json({ success: false, message: "Title is required" });
   }
 
   const note = await Note.create({ ...pickFields(req.body), userId: req.user._id });
@@ -51,7 +60,7 @@ export const updateNote = async (req, res) => {
   );
 
   if (!note) {
-    return res.status(404).json({ success: false, message: "Note not found in trash" });
+    return res.status(404).json({ success: false, message: "Note not found" });
   }
   res.json({ success: true, note });
 };
@@ -64,7 +73,7 @@ export const deleteNote = async (req, res) => {
   );
 
   if (!note) {
-    return res.status(404).json({ success: false, message: "Note not found in trash" });
+    return res.status(404).json({ success: false, message: "Note not found" });
   }
   res.json({ success: true, message: "Note moved to trash" });
 };
@@ -75,7 +84,7 @@ export const togglePin = async (req, res) => {
     isDeleted: false,
   });
   if (!note) {
-    return res.status(404).json({ success: false, message: "Note not found in trash" });
+    return res.status(404).json({ success: false, message: "Note not found" });
   }
   note.isPinned = !note.isPinned;
   await note.save();
@@ -89,7 +98,7 @@ export const toggleArchive = async (req, res) => {
     isDeleted: false,
   });
   if (!note) {
-    return res.status(404).json({ success: false, message: "Note not found in trash" });
+    return res.status(404).json({ success: false, message: "Note not found" });
   }
   note.isArchived = !note.isArchived;
   await note.save();
@@ -113,7 +122,7 @@ export const restoreNote = async (req, res) => {
   if (!note) {
     return res
       .status(404)
-      .json({ success: false, message: "Note not found in trash" });
+      .json({ success: false, message: "Note not found" });
   }
   res.json({ success: true, note });
 };
@@ -126,7 +135,7 @@ export const deleteForever = async (req, res) => {
   if (!note) {
     return res
       .status(404)
-      .json({ success: false, message: "Note not found in trash" });
+      .json({ success: false, message: "Note not found" });
   }
   res.json({ success: true, message: "Note permanently deleted" });
 };

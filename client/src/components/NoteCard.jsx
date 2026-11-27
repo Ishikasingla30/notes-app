@@ -10,7 +10,7 @@ const stripColor = {
   low: "bg-emerald-500",
 };
 
-// onEdit, onDelete, onPin, onArchive are optional.
+// onEdit, onDelete, onPin, onArchive and onTagClick are optional.
 // A button is shown only if its function is passed.
 // children = anything extra to show at the bottom (Trash page uses this).
 const NoteCard = ({
@@ -19,6 +19,7 @@ const NoteCard = ({
   onDelete,
   onPin,
   onArchive,
+  onTagClick,
   children,
 }) => {
   const priority = note.priority || "normal";
@@ -45,9 +46,20 @@ const NoteCard = ({
 
         {note.tags?.length > 0 && (
           <div className="flex flex-wrap gap-1">
-            {note.tags.map((tag) => (
-              <Badge key={tag}>#{tag}</Badge>
-            ))}
+            {note.tags.map((tag) =>
+              onTagClick ? (
+                <button
+                  key={tag}
+                  type="button"
+                  onClick={() => onTagClick(tag)}
+                  aria-label={`Filter by ${tag}`}
+                >
+                  <Badge>#{tag}</Badge>
+                </button>
+              ) : (
+                <Badge key={tag}>#{tag}</Badge>
+              )
+            )}
           </div>
         )}
 
@@ -61,7 +73,7 @@ const NoteCard = ({
             {onPin && (
               <button
                 onClick={() => onPin(note._id)}
-                aria-label="Pin note"
+                aria-label={note.isPinned ? "Unpin note" : "Pin note"}
                 className={`rounded-full p-1.5 transition hover:bg-slate-100 dark:hover:bg-slate-800 ${
                   note.isPinned ? "text-brand-600" : "text-slate-500"
                 }`}

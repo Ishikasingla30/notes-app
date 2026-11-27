@@ -1,4 +1,10 @@
-import { NavLink, Outlet, useNavigate } from "react-router-dom";
+import { useState } from "react";
+import {
+  NavLink,
+  Outlet,
+  useNavigate,
+  useSearchParams,
+} from "react-router-dom";
 import {
   FiGrid,
   FiBookmark,
@@ -11,7 +17,8 @@ import {
   FiSun,
   FiMoon,
   FiLogOut,
-  FiShield
+  FiShield,
+  FiMenu,
 } from "react-icons/fi";
 import { useTheme } from "../context/ThemeContext";
 import { useAuth } from "../context/AuthContext";
@@ -30,59 +37,101 @@ const Layout = () => {
   const { theme, toggleTheme } = useTheme();
   const { user, logout } = useAuth();
   const navigate = useNavigate();
+  const [params] = useSearchParams();
+  const [open, setOpen] = useState(false);
 
   const handleLogout = () => {
     logout();
     navigate("/login");
   };
 
+  // Search lives in the URL (?q=...) so the dashboard can read it
+  const handleSearch = (e) => {
+    const q = e.target.value;
+    navigate(q ? `/dashboard?q=${encodeURIComponent(q)}` : "/dashboard", {
+      replace: true,
+    });
+  };
+
   const initial = user?.name?.charAt(0).toUpperCase() || "?";
-const allLinks =
-  user?.role === "admin"
-    ? [...links, { to: "/admin", label: "Admin", icon: FiShield }]
-    : links;
+  const allLinks =
+    user?.role === "admin"
+      ? [...links, { to: "/admin", label: "Admin", icon: FiShield }]
+      : links;
+
+  const sidebarContent = (
+    <>
+      <div className="mb-6 px-2 text-xl font-bold text-brand-600">
+        ScriVault
+      </div>
+
+      <nav className="flex flex-col gap-1">
+        {allLinks.map(({ to, label, icon: Icon }) => (
+          <NavLink
+            key={to}
+            to={to}
+            onClick={() => setOpen(false)}
+            className={({ isActive }) =>
+              `flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition ${
+                isActive
+                  ? "bg-brand-50 text-brand-700 dark:bg-slate-800 dark:text-brand-100"
+                  : "text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
+              }`
+            }
+          >
+            <Icon size={18} />
+            {label}
+          </NavLink>
+        ))}
+      </nav>
+
+      <button
+        onClick={handleLogout}
+        className="mt-auto flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-red-50 hover:text-red-600 dark:text-slate-300 dark:hover:bg-slate-800"
+      >
+        <FiLogOut size={18} />
+        Log out
+      </button>
+    </>
+  );
+
   return (
     <div className="flex min-h-screen">
+      {/* Desktop sidebar */}
       <aside className="sticky top-0 hidden h-screen w-60 shrink-0 flex-col border-r border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900 md:flex">
-        <div className="mb-6 px-2 text-xl font-bold text-brand-600">
-          ScriVault
-        </div>
-
-        <nav className="flex flex-col gap-1">
-          {allLinks.map(({ to, label, icon: Icon }) => (
-            <NavLink
-              key={to}
-              to={to}
-              className={({ isActive }) =>
-                `flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium transition ${
-                  isActive
-                    ? "bg-brand-50 text-brand-700 dark:bg-slate-800 dark:text-brand-100"
-                    : "text-slate-600 hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800"
-                }`
-              }
-            >
-              <Icon size={18} />
-              {label}
-            </NavLink>
-          ))}
-        </nav>
-
-        <button
-          onClick={handleLogout}
-          className="mt-auto flex items-center gap-3 rounded-xl px-3 py-2 text-sm font-medium text-slate-600 transition hover:bg-red-50 hover:text-red-600 dark:text-slate-300 dark:hover:bg-slate-800"
-        >
-          <FiLogOut size={18} />
-          Log out
-        </button>
+        {sidebarContent}
       </aside>
+
+      {/* Mobile drawer */}
+      {open && (
+        <div className="fixed inset-0 z-30 md:hidden">
+          <div
+            className="absolute inset-0 bg-black/40"
+            onClick={() => setOpen(false)}
+          />
+          <aside className="absolute left-0 top-0 flex h-full w-64 flex-col border-r border-slate-200 bg-white p-4 dark:border-slate-800 dark:bg-slate-900">
+            {sidebarContent}
+          </aside>
+        </div>
+      )}
 
       <div className="flex min-w-0 flex-1 flex-col">
         <header className="sticky top-0 z-10 flex items-center gap-3 border-b border-slate-200 bg-white/80 px-4 py-3 backdrop-blur dark:border-slate-800 dark:bg-slate-900/80">
+          <button
+            onClick={() => setOpen(true)}
+            aria-label="Open menu"
+            className="rounded-full p-2 text-slate-600 transition hover:bg-slate-100 dark:text-slate-300 dark:hover:bg-slate-800 md:hidden"
+          >
+            <FiMenu size={20} />
+          </button>
+
           <div className="relative flex-1">
             <FiSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" />
             <input
               type="search"
               placeholder="Search notes"
+              defaultValue={params.get("q") || ""}
+              onChange={handleSearch}
               className="w-full rounded-full border border-slate-200 bg-slate-50 py-2 pl-9 pr-4 text-sm outline-none focus:border-brand-500 focus:ring-2 focus:ring-brand-500/30 dark:border-slate-700 dark:bg-slate-800"
             />
           </div>
@@ -95,7 +144,7 @@ const allLinks =
             {theme === "dark" ? <FiSun size={18} /> : <FiMoon size={18} />}
           </button>
 
-          <Button>
+          <Button onClick={() => navigate("/dashboard?new=1")}>
             <FiPlus size={16} />
             <span className="hidden sm:inline">New note</span>
           </Button>
